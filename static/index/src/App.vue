@@ -1,0 +1,261 @@
+<template>
+  <div id="app">
+    <mt-header title="图书馆订阅系统" style="font-size: 20px"></mt-header>
+
+    <div class="login" v-if="!isLogin">
+      <mt-field 
+        label="学号" 
+        placeholder="请输入学号" 
+        type="text" 
+        :value.sync="stuId" 
+      ></mt-field>
+      <mt-button 
+        class="login-button" 
+        size="large" 
+        type="primary" 
+        @click="login(this.value)" 
+      >
+        登陆
+      </mt-button>
+    </div>
+
+    <div class="book-cell">
+      <mt-cell 
+        v-for="ele in books" 
+        :title="ele.title | title"
+        :label='ele.location'
+      >
+        <span style="color: green" v-if="ele.canBorrowNum">
+          可借: {{ele.canBorrowNum}}
+        </span>
+        <span v-else="!ele.canBorrowNum">
+          可借: {{ele.canBorrowNum}}
+        </span>
+        <span
+          class="mint-field-state is-error"
+          v-if="showDel"
+          @click="delBook($index)"
+          >
+          <i class="mintui mintui-field-error"></i>
+        </span>
+      </mt-cell>
+    </div>
+
+    <div class="book-add" v-if="showAdd">
+      <mt-field
+        label="书籍号"
+        placeholder="eg: 0000805778"
+        :state="addBookState"
+        :value.sync="addBook"
+      >
+      </mt-field>
+    </div>
+
+    <div class="set-mail" v-if="showMail">
+      <mt-field
+        label="邮箱"
+        placeholder="用于提醒你有书可借"
+        type="text"
+        :value.sync="user.email"
+      >
+      </mt-field>
+    </div>
+
+    <div class="operate" v-if="showOperate">
+      <mt-button 
+        type="primary" 
+        size="normal"
+        v-if="!showSave"
+        @click="addSub"
+      >增加订阅</mt-button>
+      <mt-button
+        type="danger"
+        size="normal"
+        v-if="!showSave"
+        @click="delSub"
+      >删除订阅</mt-button>
+      <mt-button
+        style="width:91%;"
+        type="primary"
+        plain
+        v-if="!showSave"
+        @click="addMail"
+      >
+        设置邮箱
+      </mt-button>
+      <mt-button
+        style="background-color: #4CAF50; width:92%;"
+        type="primary"
+        v-if="showSave"
+        @click="save"
+      >
+        保存
+      </mt-button>
+    </div>
+
+  </div>
+</template>
+
+<script>
+  import Vue from 'vue'
+  import { Toast, Indicator } from 'mint-ui'
+  Vue.filter('title', val => val.replace(';', ''))
+  // Vue.filter('title', val => {
+  //   return val.replace(';', '').replace('《', '').replace('》', '')
+  // })
+  export default {
+    data () {
+      return {
+        stuId: '',
+        isLogin: false,
+        operate: '',
+        showOperate: false,
+        showAdd: false,
+        showDel: false,
+        showSave: false,
+        showMail: false,
+        user: {},
+        books: [],
+        addBook: ''
+      }
+    },
+    computed: {
+      addBookState () {
+        if (!this.addBook.length) {
+          return ''
+        }
+        if (this.addBook.length === 10) {
+          return 'success'
+        }
+        return 'error'
+      }
+    },
+    methods: {
+      login (stuId) {
+        this.$http.get(`/api/users/${this.stuId}`)
+        .then(res => res.data)
+        .then(data => {
+          this.user = data
+          this.isLogin = true
+          this.booksInfo(data.books)
+          Indicator.open('正在加载书籍情况中，请稍等')
+        })
+        .catch(() => {
+          Toast({
+            message: '您的输入不合法，请重新输入！'
+          })
+        })
+      },
+      booksInfo (books) {
+        // books.push('0000826392', '0000805778')
+        this.user.books = books
+        this.$http.post('/api/lib', JSON.stringify(books))
+        .then(res => res.data)
+        .then(data => {
+          data.forEach((val, index) => {
+            data[index].location = `馆藏地址：${val.location}`
+          })
+          this.books = data
+          this.showOperate = true
+          Indicator.close()
+        })
+      },
+      addSub () {
+        this.showAdd = true
+        this.showSave = true
+        this.operate = 'add'
+      },
+      delSub () {
+        this.showDel = true
+        this.showSave = true
+        this.operate = 'del'
+      },
+      delBook (index) {
+        this.books.splice(index, 1)
+        this.user.books.splice(index, 1)
+      },
+      addMail () {
+        this.showSave = true
+        this.showMail = true
+        this.operate = 'mail'
+      },
+      save (operate) {
+        function saveBooks (ctx) {
+          ctx.$http.post(`/api/users/${ctx.stuId}/books`, JSON.stringify(ctx.user.books))
+          .then(res => res.data)
+          .then(() => {
+            Toast({
+              message: '保存成功'
+            })
+            ctx.showDel = false
+            ctx.showSave = false
+            ctx.operate = ''
+            Indicator.close()
+          })
+        }
+        function saveEmail (ctx) {
+          ctx.$http.post(`/api/users/${ctx.stuId}/email`, JSON.stringify({email: ctx.user.email}))
+          .then(res => res.data)
+          .then(() => {
+            Toast({
+              message: '保存邮箱成功'
+            })
+            ctx.showMail = false
+            ctx.showSave = false
+            ctx.operate = ''
+            Indicator.close()
+          })
+        }
+        if (this.operate === 'add') {
+          Indicator.open('正在保存')
+          this.$http.post('/api/lib', JSON.stringify([this.addBook]))
+          .then(res => res.data)
+          .then(data => {
+            if (data.includes('Error')) {
+              Toast({
+                message: '书籍号有误，请检查重试'
+              })
+              Indicator.close()
+            } else {
+              this.user.books.push(this.addBook)
+              saveBooks(this)
+              this.showAdd = false
+              this.books.push(data[0])
+              this.addBook = ''
+            }
+          })
+        } else if (this.operate === 'mail') {
+          Indicator.open('正在保存')
+          saveEmail(this)
+        } else {
+          saveBooks(this)
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  body {
+    overflow-x: hidden;
+  }
+  .login {
+    position: absolute;
+    margin-top: 50%;
+    margin-left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .login-button {
+    margin-top: 5px;
+  }
+  .book-add {
+    margin: 5px 0;
+  }
+  .operate {
+    text-align: center;
+    margin-top: 5px;
+  }
+  .operate a {
+    width: 45%;
+  }
+</style>
