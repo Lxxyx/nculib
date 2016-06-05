@@ -23,7 +23,7 @@
       <mt-cell 
         v-for="ele in books" 
         :title="ele.title | title"
-        :label='ele.location'
+        :label='ele.location | location'
       >
         <span style="color: green" v-if="ele.canBorrowNum">
           可借: {{ele.canBorrowNum}}
@@ -101,6 +101,7 @@
   import Vue from 'vue'
   import { Toast, Indicator } from 'mint-ui'
   Vue.filter('title', val => val.replace(';', ''))
+  Vue.filter('location', val => `馆藏地址：${val}`)
   // Vue.filter('title', val => {
   //   return val.replace(';', '').replace('《', '').replace('》', '')
   // })
@@ -156,14 +157,10 @@
         })
       },
       booksInfo (books) {
-        // books.push('0000826392', '0000805778')
         this.user.books = books
         this.$http.post('/api/lib', JSON.stringify(books))
         .then(res => res.data)
         .then(data => {
-          data.forEach((val, index) => {
-            data[index].location = `馆藏地址：${val.location}`
-          })
           this.books = data
           this.showOperate = true
           Indicator.close()
