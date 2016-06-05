@@ -56,6 +56,7 @@
         label="邮箱"
         placeholder="用于提醒你有书可借"
         type="text"
+        :state="emailState"
         :value.sync="user.email"
       >
       </mt-field>
@@ -125,6 +126,14 @@
           return ''
         }
         if (this.addBook.length === 10) {
+          return 'success'
+        }
+        return 'error'
+      },
+      emailState () {
+        let re = /@./i
+        if (this.user.email === '') return ''
+        if (re.test(this.user.email)) {
           return 'success'
         }
         return 'error'
@@ -207,6 +216,11 @@
           })
         }
         if (this.operate === 'add') {
+          if (!this.addBook) {
+            this.showAdd = false
+            this.showSave = false
+            return false
+          }
           Indicator.open('正在保存')
           this.$http.post('/api/lib', JSON.stringify([this.addBook]))
           .then(res => res.data)
