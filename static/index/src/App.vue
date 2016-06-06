@@ -100,11 +100,10 @@
 <script>
   import Vue from 'vue'
   import { Toast, Indicator } from 'mint-ui'
+
   Vue.filter('title', val => val.replace(';', ''))
   Vue.filter('location', val => `馆藏地址：${val}`)
-  // Vue.filter('title', val => {
-  //   return val.replace(';', '').replace('《', '').replace('》', '')
-  // })
+
   export default {
     data () {
       return {
@@ -118,6 +117,7 @@
         showMail: false,
         user: {},
         books: [],
+        booksLength: 0,
         addBook: ''
       }
     },
@@ -175,6 +175,7 @@
         this.showDel = true
         this.showSave = true
         this.operate = 'del'
+        this.booksLength = this.books.length
       },
       delBook (index) {
         this.books.splice(index, 1)
@@ -218,6 +219,12 @@
             this.showSave = false
             return false
           }
+          if (this.addBook.length !== 10) {
+            Toast({
+              message: '书籍号有误，请检查重试'
+            })
+            return false
+          }
           Indicator.open('正在保存')
           this.$http.post('/api/lib', JSON.stringify([this.addBook]))
           .then(res => res.data)
@@ -239,6 +246,7 @@
           Indicator.open('正在保存')
           saveEmail(this)
         } else {
+          if (this.booksLength === this.books.length) return
           saveBooks(this)
         }
       }
