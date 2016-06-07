@@ -26,10 +26,10 @@
           :title="ele.title | lendTitle"
           :label="ele.lend | lendTime"
         >
-          <span v-if="ele.remain > 5" style="color: #4caf50">
+          <span v-if="ele.remain > 9" style="color: #4caf50">
             {{ele.remain | remain}}
           </span>
-          <span v-if="ele.remain > 0 && ele.remain < 5" style="color: yello">
+          <span v-if="ele.remain > 0 && ele.remain <= 9" style="color: #FF5722">
             {{ele.remain | remain}}
           </span>
           <span v-if="ele.remain < 0" style="color: red">
