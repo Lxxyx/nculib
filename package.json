@@ -34,6 +34,7 @@
     "koa-views": "^5.0.1",
     "ncu-libary": "^2.0.2",
     "nedb-promise": "^2.0.0",
-    "nodemon": "^1.9.1"
+    "nodemon": "^1.9.1",
+    "request-promise": "^3.0.0"
   }
 }

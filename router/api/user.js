@@ -1,4 +1,5 @@
 import Router from 'koa-router'
+import lib from 'ncu-libary'
 
 const users = new Router({
   prefix: '/users'
@@ -20,6 +21,9 @@ users
       ctx.body = await ctx.db.insert(userModel)
     }
   })
+  .get('/:user/lend', async ctx => {
+    ctx.body = await lib.lend(ctx.params.user)
+  })
   .post('/:user/books', async ctx => {
     let user = { name: ctx.params.user }
     let newBooks = ctx.request.body
@@ -28,7 +32,6 @@ users
     }, { returnUpdatedDocs: true })
   })
   .post('/:user/email', async ctx => {
-    console.log(user)
     let user = { name: ctx.params.user }
     let body = ctx.request.body
     ctx.body = await ctx.db.update(user, {

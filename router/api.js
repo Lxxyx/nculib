@@ -1,4 +1,5 @@
 import Router from 'koa-router'
+import rp from 'request-promise'
 import lib from 'ncu-libary'
 
 import users from './api/user'
@@ -18,6 +19,11 @@ api
     let lists = []
     books.forEach(book => lists.push(`${libIp}${book}`))
     ctx.body = await lib.booksInfo(lists)
+  })
+  .post('/relend', async ctx => {
+    let relend = ctx.request.body
+    await rp(relend.uri)
+    ctx.body = '续借成功'
   })
 
 api.use(users.routes())

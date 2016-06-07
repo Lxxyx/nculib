@@ -19,81 +19,112 @@
       </mt-button>
     </div>
 
-    <div class="book-cell">
-      <mt-cell 
-        v-for="ele in books" 
-        :title="ele.title | title"
-        :label='ele.location | location'
-      >
-        <span style="color: green" v-if="ele.canBorrowNum">
-          可借: {{ele.canBorrowNum}}
-        </span>
-        <span v-else="!ele.canBorrowNum">
-          可借: {{ele.canBorrowNum}}
-        </span>
-        <span
-          class="mint-field-state is-error"
-          v-if="showDel"
-          @click="delBook($index)"
+    <mt-tab-container :active.sync="selected">
+      <mt-tab-container-item id="借阅">
+        <mt-cell 
+          v-for="ele in lend" 
+          :title="ele.title | lendTitle"
+          :label="ele.lend | lendTime"
+        >
+          <span v-if="ele.remain > 5" style="color: #4caf50">
+            {{ele.remain | remain}}
+          </span>
+          <span v-if="ele.remain > 0 && ele.remain < 5" style="color: yello">
+            {{ele.remain | remain}}
+          </span>
+          <span v-if="ele.remain < 0" style="color: red">
+            超期：{{ele.remain | remain}}
+          </span>                  
+        </mt-cell>
+      </mt-tab-container-item>
+      <mt-tab-container-item id="订阅">
+        <div class="book-cell">
+          <mt-cell 
+            v-for="ele in books" 
+            :title="ele.title | title"
+            :label='ele.location | location'
           >
-          <i class="mintui mintui-field-error"></i>
-        </span>
-      </mt-cell>
-    </div>
+            <span style="color: green" v-if="ele.canBorrowNum">
+              可借: {{ele.canBorrowNum}}
+            </span>
+            <span v-else="!ele.canBorrowNum">
+              可借: {{ele.canBorrowNum}}
+            </span>
+            <span
+              class="mint-field-state is-error"
+              v-if="showDel"
+              @click="delBook($index)"
+              >
+              <i class="mintui mintui-field-error"></i>
+            </span>
+          </mt-cell>
+        </div>
 
-    <div class="book-add" v-if="showAdd">
-      <mt-field
-        label="书籍号"
-        placeholder="eg: 0000805778"
-        :state="addBookState"
-        :value.sync="addBook"
-      >
-      </mt-field>
-    </div>
+        <div class="book-add" v-if="showAdd">
+          <mt-field
+            label="书籍号"
+            placeholder="eg: 0000805778"
+            :state="addBookState"
+            :value.sync="addBook"
+          >
+          </mt-field>
+        </div>
 
-    <div class="set-mail" v-if="showMail">
-      <mt-field
-        label="邮箱"
-        placeholder="用于提醒你有书可借"
-        type="text"
-        :state="emailState"
-        :value.sync="user.email"
-      >
-      </mt-field>
-    </div>
+        <div class="set-mail" v-if="showMail">
+          <mt-field
+            label="邮箱"
+            placeholder="用于提醒你有书可借"
+            type="text"
+            :state="emailState"
+            :value.sync="user.email"
+          >
+          </mt-field>
+        </div>
 
-    <div class="operate" v-if="showOperate">
-      <mt-button 
-        type="primary" 
-        size="normal"
-        v-if="!showSave"
-        @click="addSub"
-      >增加订阅</mt-button>
-      <mt-button
-        type="danger"
-        size="normal"
-        v-if="!showSave"
-        @click="delSub"
-      >删除订阅</mt-button>
-      <mt-button
-        style="width:91%;"
-        type="primary"
-        plain
-        v-if="!showSave"
-        @click="addMail"
-      >
-        设置邮箱
-      </mt-button>
-      <mt-button
-        style="background-color: #4CAF50; width:92%;"
-        type="primary"
-        v-if="showSave"
-        @click="save"
-      >
-        保存
-      </mt-button>
-    </div>
+        <div class="operate" v-if="showOperate">
+          <mt-button 
+            type="primary" 
+            size="normal"
+            v-if="!showSave"
+            @click="addSub"
+          >增加订阅</mt-button>
+          <mt-button
+            type="danger"
+            size="normal"
+            v-if="!showSave"
+            @click="delSub"
+          >删除订阅</mt-button>
+          <mt-button
+            style="width:91%;"
+            type="primary"
+            plain
+            v-if="!showSave"
+            @click="addMail"
+          >
+            设置邮箱
+          </mt-button>
+          <mt-button
+            style="background-color: #4CAF50; width:92%;"
+            type="primary"
+            v-if="showSave"
+            @click="save"
+          >
+            保存
+          </mt-button>
+        </div>
+      </mt-tab-container-item>
+    </mt-tab-container>
 
+    <footer v-if="isLogin">
+      <mt-tabbar :selected.sync="selected" fixed>
+        <mt-tab-item id="借阅">
+          借阅
+        </mt-tab-item>
+        <mt-tab-item id="订阅">
+          订阅
+        </mt-tab-item>
+      </mt-tabbar>
+    </footer>
   </div>
 </template>
 
@@ -101,8 +132,13 @@
   import Vue from 'vue'
   import { Toast, Indicator } from 'mint-ui'
 
+  const lendTitleRe = /\/.+/i
   Vue.filter('title', val => val.replace(';', ''))
-  Vue.filter('location', val => `馆藏地址：${val}`)
+  Vue.filter('location', val => `馆藏地址：${val}main.js`)
+  Vue.filter('lendDate', val => `借：${val}`)
+  Vue.filter('lendTitle', val => val.replace(lendTitleRe, '》'))
+  Vue.filter('remain', val => `${val}天`)
+  Vue.filter('lendTime', val => `借阅日期：${val}`)
 
   export default {
     data () {
@@ -118,7 +154,9 @@
         user: {},
         books: [],
         booksLength: 0,
-        addBook: ''
+        addBook: '',
+        selected: '借阅',
+        lend: []
       }
     },
     computed: {
@@ -147,6 +185,7 @@
         .then(data => {
           this.user = data
           this.isLogin = true
+          this.lendInfo()
           this.booksInfo(data.books)
           Indicator.open('正在加载书籍情况中，请稍等')
         })
@@ -156,6 +195,15 @@
           })
         })
       },
+      lendInfo () {
+        this.$http.get(`/api/users/${this.stuId}/lend`)
+        .then(res => res.data)
+        .then(data => {
+          this.lend = data
+          Indicator.close()
+        })
+        .catch(err => console.log(err))
+      },
       booksInfo (books) {
         this.user.books = books
         this.$http.post('/api/lib', JSON.stringify(books))
@@ -163,8 +211,11 @@
         .then(data => {
           this.books = data
           this.showOperate = true
-          Indicator.close()
+          // Indicator.close()
         })
+      },
+      reLend (uri) {
+        console.log(uri)
       },
       addSub () {
         this.showAdd = true
@@ -256,16 +307,19 @@
 
 <style>
   body {
-    overflow-x: hidden;
+    /* overflow-x: hidden; */
   }
   .login {
-    position: absolute;
-    margin-top: 50%;
-    margin-left: 50%;
-    transform: translate(-50%, -50%);
+    margin-top: 35vh;
   }
   .login-button {
     margin-top: 5px;
+  }
+  .reLend {
+    background: #4caf50;
+    color: #fff;
+    padding: 4px;
+    border-radius: 3px;
   }
   .book-add {
     margin: 5px 0;
