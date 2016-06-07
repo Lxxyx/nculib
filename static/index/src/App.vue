@@ -115,16 +115,15 @@
       </mt-tab-container-item>
     </mt-tab-container>
 
-    <footer v-if="isLogin">
-      <mt-tabbar :selected.sync="selected" fixed>
-        <mt-tab-item id="借阅">
-          借阅
-        </mt-tab-item>
-        <mt-tab-item id="订阅">
-          订阅
-        </mt-tab-item>
-      </mt-tabbar>
-    </footer>
+    <mt-tabbar :selected.sync="selected" fixed v-if="isLogin">
+      <mt-tab-item id="借阅">
+        借阅
+      </mt-tab-item>
+      <mt-tab-item id="订阅">
+        订阅
+      </mt-tab-item>
+    </mt-tabbar>
+    <div class="fix-fixed"></div>
   </div>
 </template>
 
@@ -200,9 +199,15 @@
         .then(res => res.data)
         .then(data => {
           this.lend = data
+          this.fixHeight()
           Indicator.close()
         })
         .catch(err => console.log(err))
+      },
+      fixHeight () {
+        let tabbar = document.getElementsByClassName('mint-tabbar')[0]
+        let fixFixed = document.getElementsByClassName('fix-fixed')[0]
+        fixFixed.style.height = tabbar.scrollHeight + 'px'
       },
       booksInfo (books) {
         this.user.books = books
@@ -330,5 +335,8 @@
   }
   .operate a {
     width: 45%;
+  }
+  .fix-fixed {
+    width: 100%;
   }
 </style>
