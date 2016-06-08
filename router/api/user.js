@@ -21,6 +21,10 @@ users
       ctx.body = await ctx.db.insert(userModel)
     }
   })
+  .post('/login', async ctx => {
+    let user = ctx.request.body
+    ctx.body = await lib.lend(user.username, user.password)
+  })
   .get('/:user/lend', async ctx => {
     ctx.body = await lib.lend(ctx.params.user)
   })

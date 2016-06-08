@@ -9,6 +9,12 @@
         type="text" 
         :value.sync="stuId" 
       ></mt-field>
+      <mt-field 
+        label="密码" 
+        placeholder="请输入密码/默认为123456" 
+        type="password" 
+        :value.sync="password" 
+      ></mt-field>
       <mt-button 
         class="login-button" 
         size="large" 
@@ -26,10 +32,10 @@
           :title="ele.title | lendTitle"
           :label="ele.lend | lendTime"
         >
-          <span v-if="ele.remain > 9" style="color: #4caf50">
+          <span v-if="ele.remain > 7" style="color: #4caf50">
             {{ele.remain | remain}}
           </span>
-          <span v-if="ele.remain > 0 && ele.remain <= 9" style="color: #FF5722">
+          <span v-if="ele.remain > 0 && ele.remain <= 7" style="color: #FF5722">
             {{ele.remain | remain}}
           </span>
           <span v-if="ele.remain < 0" style="color: red">
@@ -113,14 +119,23 @@
           </mt-button>
         </div>
       </mt-tab-container-item>
+      <mt-tab-container-item id="搜索">
+        <mt-search :value.sync="search"></mt-search>
+      </mt-tab-container-item>
     </mt-tab-container>
 
     <mt-tabbar :selected.sync="selected" fixed v-if="isLogin">
       <mt-tab-item id="借阅">
+        <i class="iconfont icon-book"></i>
         借阅
       </mt-tab-item>
       <mt-tab-item id="订阅">
+        <i class="iconfont icon-news"></i>
         订阅
+      </mt-tab-item>
+      <mt-tab-item id="搜索">
+        <i class="iconfont icon-search"></i>
+        搜索
       </mt-tab-item>
     </mt-tabbar>
     <div class="fix-fixed"></div>
@@ -143,6 +158,7 @@
     data () {
       return {
         stuId: '',
+        password: '',
         isLogin: false,
         operate: '',
         showOperate: false,
@@ -155,7 +171,8 @@
         booksLength: 0,
         addBook: '',
         selected: '借阅',
-        lend: []
+        lend: [],
+        search: ''
       }
     },
     computed: {
@@ -195,7 +212,10 @@
         })
       },
       lendInfo () {
-        this.$http.get(`/api/users/${this.stuId}/lend`)
+        this.$http.post('/api/users/login', JSON.stringify({
+          username: this.stuId,
+          password: this.password || '123456'
+        }))
         .then(res => res.data)
         .then(data => {
           this.lend = data
@@ -216,7 +236,6 @@
         .then(data => {
           this.books = data
           this.showOperate = true
-          // Indicator.close()
         })
       },
       reLend (uri) {
