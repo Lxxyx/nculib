@@ -3,6 +3,7 @@
     <mt-header 
       title="图书馆订阅系统" 
       style="font-size: 20px"
+      v-if="showHeader"
     >
     </mt-header>
 
@@ -138,8 +139,20 @@
           <mt-cell
             v-for="ele in search.result"
             :title="ele.title"
-            :label="ele.author"
+            :label="ele.location"
           >
+            <span v-if="ele.canBorrowNum > 0" style="color: green;">
+              可借：{{ele.canBorrowNum}}
+            </span>
+            <span v-else>
+              可借：{{ele.canBorrowNum}}
+            </span>
+            <span
+              class="mint-field-state is-success sub-add"
+              @click="addSubBook(ele.marc_no)"
+            >
+              <i class="iconfont icon-add"></i>
+            </span>
           </mt-cell>
           <div class="search-spinner">
             <mt-spinner type="snake" v-if="search.loading"></mt-spinner>
@@ -150,15 +163,15 @@
     </mt-tab-container>
 
     <mt-tabbar :selected.sync="selected" fixed v-if="isLogin">
-      <mt-tab-item id="借阅">
+      <mt-tab-item class="tab-item" id="借阅">
         <i class="iconfont icon-book"></i>
         借阅
       </mt-tab-item>
-      <mt-tab-item id="订阅">
+      <mt-tab-item class="tab-item" id="订阅">
         <i class="iconfont icon-news"></i>
         订阅
       </mt-tab-item>
-      <mt-tab-item id="搜索">
+      <mt-tab-item class="tab-item" id="搜索">
         <i class="iconfont icon-search"></i>
         搜索
       </mt-tab-item>
@@ -173,7 +186,7 @@
 
   const lendTitleRe = /\/.+/i
   Vue.filter('title', val => val.replace(';', ''))
-  Vue.filter('location', val => `馆藏地址：${val}main.js`)
+  Vue.filter('location', val => `馆藏地址：${val}`)
   Vue.filter('lendDate', val => `借：${val}`)
   Vue.filter('lendTitle', val => val.replace(lendTitleRe, '》'))
   Vue.filter('remain', val => `${val}天`)
@@ -222,6 +235,9 @@
           return 'success'
         }
         return 'error'
+      },
+      showHeader () {
+        return this.selected !== '搜索'
       }
     },
     methods: {
@@ -285,12 +301,23 @@
         .then(res => res.data)
         .then(data => {
           this.search.result = data
+          if (!data.length) {
+            Toast({
+              message: '未找到你要的图书'
+            })
+          }
           Indicator.close()
         })
         .catch(e => {
           console.log(e)
           Indicator.close()
         })
+      },
+      addSubBook (marcNo) {
+        console.log(marcNo)
+        this.addBook = marcNo
+        this.operate = 'add'
+        this.save()
       },
       loadMore () {
         this.search.page += 1
@@ -342,6 +369,7 @@
             ctx.operate = ''
             Indicator.close()
           })
+          .catch(e => console.log(e))
         }
         function saveEmail (ctx) {
           ctx.$http.post(`/api/users/${ctx.stuId}/email`, JSON.stringify({email: ctx.user.email}))
@@ -416,6 +444,13 @@
   .book-add {
     margin: 5px 0;
   }
+  .sub-add {
+    margin-left: 10px !important;
+    margin-bottom: 4px !important;
+  }
+  .sub-add i::before {
+    font-size: 21px;
+  }
   .operate {
     text-align: center;
     margin-top: 5px;
@@ -431,5 +466,8 @@
     display: flex;
     justify-content: center;
     margin: 10px 0;
+  }
+  .tab-item {
+    padding: 15px 0 !important;
   }
 </style>
