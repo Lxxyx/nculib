@@ -128,8 +128,6 @@
         <mt-search 
           :value.sync="search.title"
           :result.sync="search.result"
-          cancel-text="取消"
-          placeholder="搜索"
           @keyup.enter="searchBook"
         >
         <div
@@ -214,7 +212,7 @@
           title: '',
           page: 1,
           result: [],
-          loading: false
+          loading: true
         }
       }
     },
@@ -314,7 +312,6 @@
         })
       },
       addSubBook (marcNo) {
-        console.log(marcNo)
         this.addBook = marcNo
         this.operate = 'add'
         this.save()
@@ -446,7 +443,7 @@
   }
   .sub-add {
     margin-left: 10px !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 0px !important;
   }
   .sub-add i::before {
     font-size: 21px;
@@ -470,4 +467,10 @@
   .tab-item {
     padding: 15px 0 !important;
   }
+  .mint-searchbar-placeholder {
+    padding: 18px !important;
+  }
+/*   .mint-searchbar-inner {
+    padding: 4px 6px !important;
+  } */
 </style>
