@@ -34,10 +34,10 @@ export function randomString(len) {　　
  * @param  {Object} extra    附加的说明与参数
  */
 export class KoaErr extends Error {
-  constructor({ message = 'Error', code = 500 } = {}, ...args) {
+  constructor({ message = 'Error', status = 500 } = {}, ...args) {
     super()
     this.message = message
-    this.code = code
+    this.status = status
     if (args.length > 0) {
       extend(this, args[0])
     }

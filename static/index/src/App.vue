@@ -244,7 +244,6 @@
         .then(res => res.data)
         .then(data => {
           this.user = data
-          this.isLogin = true
           this.lendInfo()
           this.booksInfo(data.books)
           Indicator.open('正在加载借阅信息，请稍等')
@@ -262,16 +261,19 @@
         }))
         .then(res => res.data)
         .then(data => {
+          this.isLogin = true
           this.lend = data
-          this.fixHeight()
+          this.$nextTick(() => {
+            this.fixHeight()
+          })
           Indicator.close()
         })
-        .catch(err => {
+        .catch(e => {
+          console.log(e)
           Toast({
-            message: '出错，请检查用户名和密码'
+            message: e.data.message
           })
           this.isLogin = false
-          console.log(err)
           Indicator.close()
         })
       },

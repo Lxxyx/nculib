@@ -23,7 +23,12 @@ users
   })
   .post('/login', async ctx => {
     let user = ctx.request.body
-    ctx.body = await lib.lend(user.username, user.password)
+    let result = await lib.lend(user.username, user.password).catch(e => e)
+    if (result.code === 400) {
+      throw new ctx.err({message: result.message, status: result.code})
+    } else {
+      ctx.body = result
+    }
   })
   .get('/:user/lend', async ctx => {
     ctx.body = await lib.lend(ctx.params.user)
