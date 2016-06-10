@@ -355,7 +355,7 @@
         this.showMail = true
         this.operate = 'mail'
       },
-      save (operate) {
+      save () {
         function saveBooks (ctx) {
           ctx.$http.post(`/api/users/${ctx.stuId}/books`, JSON.stringify(ctx.user.books))
           .then(res => res.data)
@@ -399,18 +399,22 @@
           this.$http.post('/api/lib', JSON.stringify([this.addBook]))
           .then(res => res.data)
           .then(data => {
-            if (data.includes('Error')) {
+            if (data.indexOf('Error') > 0) {
               Toast({
                 message: '书籍号有误，请检查重试'
               })
               Indicator.close()
             } else {
               this.user.books.push(this.addBook)
-              saveBooks(this)
               this.showAdd = false
               this.books.push(data[0])
               this.addBook = ''
+              saveBooks(this)
             }
+          })
+          .catch(e => {
+            Indicator.close()
+            console.log(e)
           })
         } else if (this.operate === 'mail') {
           Indicator.open('正在保存')
