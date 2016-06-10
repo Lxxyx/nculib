@@ -20,6 +20,9 @@ api
     books.forEach(book => lists.push(`${libIp}${book}`))
     ctx.body = await lib.booksInfo(lists)
   })
+  .post('/search', async ctx => {
+    ctx.body = await lib.search(ctx.request.body.title, ctx.request.body.page)
+  })
   .post('/relend', async ctx => {
     let relend = ctx.request.body
     await rp(relend.uri)

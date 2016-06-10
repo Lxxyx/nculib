@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <mt-header title="图书馆订阅系统" style="font-size: 20px"></mt-header>
+    <mt-header 
+      title="图书馆订阅系统" 
+      style="font-size: 20px"
+    >
+    </mt-header>
 
     <div class="login" v-if="!isLogin">
       <mt-field 
@@ -60,7 +64,7 @@
               class="mint-field-state is-error"
               v-if="showDel"
               @click="delBook($index)"
-              >
+            >
               <i class="mintui mintui-field-error"></i>
             </span>
           </mt-cell>
@@ -120,7 +124,28 @@
         </div>
       </mt-tab-container-item>
       <mt-tab-container-item id="搜索">
-        <mt-search :value.sync="search"></mt-search>
+        <mt-search 
+          :value.sync="search.title"
+          :result.sync="search.result"
+          cancel-text="取消"
+          placeholder="搜索"
+          @keyup.enter="searchBook"
+        >
+        <div
+          v-infinite-scroll="loadMore()"
+          infinite-scroll-distance="10"
+        >
+          <mt-cell
+            v-for="ele in search.result"
+            :title="ele.title"
+            :label="ele.author"
+          >
+          </mt-cell>
+          <div class="search-spinner">
+            <mt-spinner type="snake" v-if="search.loading"></mt-spinner>
+          </div>
+        </div>
+        </mt-search>
       </mt-tab-container-item>
     </mt-tab-container>
 
@@ -172,7 +197,12 @@
         addBook: '',
         selected: '借阅',
         lend: [],
-        search: ''
+        search: {
+          title: '',
+          page: 1,
+          result: [],
+          loading: false
+        }
       }
     },
     computed: {
@@ -203,7 +233,7 @@
           this.isLogin = true
           this.lendInfo()
           this.booksInfo(data.books)
-          Indicator.open('正在加载书籍情况中，请稍等')
+          Indicator.open('正在加载借阅信息，请稍等')
         })
         .catch(() => {
           Toast({
@@ -222,7 +252,14 @@
           this.fixHeight()
           Indicator.close()
         })
-        .catch(err => console.log(err))
+        .catch(err => {
+          Toast({
+            message: '出错，请检查用户名和密码'
+          })
+          this.isLogin = false
+          console.log(err)
+          Indicator.close()
+        })
       },
       fixHeight () {
         let tabbar = document.getElementsByClassName('mint-tabbar')[0]
@@ -236,6 +273,37 @@
         .then(data => {
           this.books = data
           this.showOperate = true
+        })
+      },
+      searchBook () {
+        if (!this.search) {
+          return false
+        }
+        this.search.page = 1
+        Indicator.open('正在搜索')
+        this.$http.post('/api/search', JSON.stringify({title: this.search.title, page: this.search.page}))
+        .then(res => res.data)
+        .then(data => {
+          this.search.result = data
+          Indicator.close()
+        })
+        .catch(e => {
+          console.log(e)
+          Indicator.close()
+        })
+      },
+      loadMore () {
+        this.search.page += 1
+        this.search.loading = true
+        this.$http.post('/api/search', JSON.stringify({title: this.search.title, page: this.search.page}))
+        .then(res => res.data)
+        .then(data => {
+          this.search.result = this.search.result.concat(data)
+          this.search.loading = false
+        })
+        .catch(e => {
+          console.log(e)
+          Indicator.close()
         })
       },
       reLend (uri) {
@@ -357,5 +425,11 @@
   }
   .fix-fixed {
     width: 100%;
+  }
+  .search-spinner {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
   }
 </style>
