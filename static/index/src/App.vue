@@ -7,7 +7,7 @@
     >
     </mt-header>
 
-    <div class="login" v-if="!isLogin">
+    <div class="login" v-if="!isLogin" @keyup.enter="login">
       <mt-field 
         label="学号" 
         placeholder="请输入学号" 
@@ -24,7 +24,7 @@
         class="login-button" 
         size="large" 
         type="primary" 
-        @click="login(this.value)" 
+        @click="login" 
       >
         登陆
       </mt-button>
@@ -94,19 +94,21 @@
 
         <div class="operate" v-if="showOperate">
           <mt-button 
+            style="width: 45%;"
             type="primary" 
             size="normal"
             v-if="!showSave"
             @click="addSub"
           >增加订阅</mt-button>
           <mt-button
+            style="width: 45%;"
             type="danger"
             size="normal"
             v-if="!showSave"
             @click="delSub"
           >删除订阅</mt-button>
           <mt-button
-            style="width:91%;"
+            style="width:90.5%;margin-top: 5px;"
             type="primary"
             plain
             v-if="!showSave"
@@ -399,28 +401,32 @@
           this.$http.post('/api/lib', JSON.stringify([this.addBook]))
           .then(res => res.data)
           .then(data => {
-            if (data.indexOf('Error') > 0) {
+            this.user.books.push(this.addBook)
+            this.showAdd = false
+            this.books.push(data[0])
+            this.addBook = ''
+            saveBooks(this)
+          })
+          .catch(e => {
+            if (e.data.includes('Error')) {
               Toast({
                 message: '书籍号有误，请检查重试'
               })
-              Indicator.close()
             } else {
-              this.user.books.push(this.addBook)
-              this.showAdd = false
-              this.books.push(data[0])
-              this.addBook = ''
-              saveBooks(this)
+              Toast({message: e.data})
             }
-          })
-          .catch(e => {
             Indicator.close()
-            console.log(e)
           })
         } else if (this.operate === 'mail') {
           Indicator.open('正在保存')
           saveEmail(this)
         } else {
-          if (this.booksLength === this.books.length) return
+          if (this.booksLength === this.books.length) {
+            this.showDel = false
+            this.showSave = false
+            this.operate = ''
+            return false
+          }
           saveBooks(this)
         }
       }
@@ -456,10 +462,7 @@
   }
   .operate {
     text-align: center;
-    margin-top: 5px;
-  }
-  .operate a {
-    width: 45%;
+    margin-top: 10px;
   }
   .fix-fixed {
     width: 100%;
