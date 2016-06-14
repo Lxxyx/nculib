@@ -21,7 +21,6 @@
     "babel-register": "^6.8.0",
     "babel-runtime": "^6.9.2",
     "ejs": "^2.4.1",
-    "eslint": "^2.12.0",
     "koa": "^2.0.0",
     "koa-bodyparser": "^2.2.0",
     "koa-compress": "^2.0.0",
@@ -39,8 +38,7 @@
     "request-promise": "^3.0.0"
   },
   "devDependencies": {
-    "babel-eslint": "^6.0.4",
-    "eslint-config-vue": "^1.0.3",
-    "eslint-plugin-vue": "^0.1.1"
+    "eslint": "^2.12.0",
+    "babel-eslint": "^6.0.4"
   }
 }
