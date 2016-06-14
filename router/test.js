@@ -5,15 +5,15 @@ const test = new Router({
 })
 
 test
-  .get('/json', (ctx, next) => {
+  .get('/json', ctx => {
     ctx.body = {
       test: 'json'
     }
   })
-  .get('/', (ctx, next) => {
-    ctx.body = "this is test page!"
+  .get('/', ctx => {
+    ctx.body = 'this is test page!'
   })
-  .post('/post', (ctx, next) => {
+  .post('/post', ctx => {
     ctx.body = ctx.request.body
   })
 

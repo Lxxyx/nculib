@@ -4,8 +4,8 @@
  * @param  {Object} from 被安装的对象
  * @return {Object} to   安装完成的对象
  */
-export function extend(to, from) {
-  let keys = Object.keys(from)
+export function extend (to, from) {
+  const keys = Object.keys(from)
   let i = keys.length
   while (i--) {
     to[keys[i]] = from[keys[i]]
@@ -18,10 +18,9 @@ export function extend(to, from) {
  * @param  {Number} len 要生成的长度
  * @return {String} pwd 生成的随机字符串
  */
-export function randomString(len) {　　
-  len = len || 5
-  let chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
-  let maxPos = chars.length
+export function randomString (len = 5) {
+  const chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
+  const maxPos = chars.length
   let pwd = ''
   for (let i = 0; i < len; i++) {
     pwd += chars.charAt(Math.floor(Math.random() * maxPos))
@@ -34,7 +33,7 @@ export function randomString(len) {　　
  * @param  {Object} extra    附加的说明与参数
  */
 export class KoaErr extends Error {
-  constructor({ message = 'Error', status = 500 } = {}, ...args) {
+  constructor ({ message = 'Error', status = 500 } = {}, ...args) {
     super()
     this.message = message
     this.status = status
